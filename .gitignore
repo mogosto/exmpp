@@ -3,6 +3,7 @@ c_src/*.o
 priv/
 src/core/*known*.erl
 ebin/*.beam
+ebin/*.app
 include/internal/*known*.hrl
 doc/*.html
 doc/*.css
