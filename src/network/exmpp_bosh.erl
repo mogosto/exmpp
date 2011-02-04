@@ -32,7 +32,7 @@
 -include("exmpp.hrl").
 
 %% Behaviour exmpp_gen_transport ?
--export([connect/3,  send/2, close/2, reset_parser/1]).
+-export([connect/3,  send/2, close/2, reset_parser/1, get_property/2]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
@@ -61,6 +61,14 @@
         local_ip,  %ip to bind sockets to                                                           
         local_port                                                                                  
         }).                                                                                  
+
+% Valid PropValues: rid | sid
+% get_property(_, rid) -> integer()
+% get_property(_, sid) -> binary()
+get_property(Pid, Prop) when Prop == rid ; Prop == sid ->
+    {ok, gen_server:call(Pid, {get_property, Prop})};
+get_property(_Pid, _Prop) ->
+    {error, undefined}.
 
 reset_parser(Pid) ->
     gen_server:call(Pid,reset_parser, infinity).
@@ -96,6 +104,11 @@ init([ClientPid, StreamRef, URL, Domain, Options]) ->
             stream_ref = exmpp_xmlstream:set_wrapper_tagnames(StreamRef, [body])
             },                                                                  
      {ok, State}.                                                               
+
+handle_call({get_property, rid}, _From, State) ->
+    {reply, State#state.rid, State};
+handle_call({get_property, sid}, _From, State) ->
+    {reply, State#state.sid, State};
 
 %% reset the connection. We send here a fake stream response to the client to.
 %% TODO: check if it is not best to do this in do_send/2                      
@@ -216,9 +229,9 @@ do_send(#xmlel{ns=?NS_XMPP, name='stream'}, State) ->
     NewState2 = return_socket(NewState, Socket), %%TODO: this can be improved.. don't close the socket and reuse it for latter
 
     [#xmlel{name=body} = BodyEl] = exmpp_xml:parse_document(Resp),
-    SID = exmpp_xml:get_attribute_as_binary(BodyEl, sid, undefined),
-    AuthID = exmpp_xml:get_attribute_as_binary(BodyEl,authid,undefined),
-    Requests = list_to_integer(exmpp_xml:get_attribute_as_list(BodyEl,requests,undefined)),
+    SID = exmpp_xml:get_attribute_as_binary(BodyEl, <<"sid">>, undefined),
+    AuthID = exmpp_xml:get_attribute_as_binary(BodyEl,<<"authid">>,undefined),
+    Requests = list_to_integer(exmpp_xml:get_attribute_as_list(BodyEl,<<"requests">>,undefined)),
     Events = [{xmlstreamelement, El} || El <- exmpp_xml:get_child_elements(BodyEl)],                                      
 
     % first return a fake stream response, then anything found inside the <body/> element (possibly nothing)

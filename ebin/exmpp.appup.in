@@ -1,4 +1,4 @@
-{ "@VERSION@",
+{ "0.9.5-next",
   [
     % To upgrade from the specified version to current one.
   ], [

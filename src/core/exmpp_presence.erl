@@ -21,6 +21,9 @@
 
 -include("exmpp.hrl").
 
+%% avoid name clash with local error/2 function
+-compile({no_auto_import,[error/2]}).
+
 %% Presence creation.
 -export([
 	 presence/2,
@@ -38,6 +41,7 @@
 -export([
 	 is_presence/1,
 	 get_type/1,
+	 set_type/2,
 	 get_show/1,
 	 set_show/2,
 	 get_status/1,
@@ -226,15 +230,15 @@ get_type(Presence) when ?IS_PRESENCE(Presence) ->
 (xmlel(), presencetype() | binary() | string()) -> xmlel().
 
 set_type(Presence, <<>>) when ?IS_PRESENCE(Presence) ->
-    exmpp_xml:remove_attribute(Presence, 'type');
+    exmpp_xml:remove_attribute(Presence, <<"type">>);
 set_type(Presence, "") when ?IS_PRESENCE(Presence) ->
-    exmpp_xml:remove_attribute(Presence, 'type');
+    exmpp_xml:remove_attribute(Presence, <<"type">>);
 set_type(Presence, 'available') when ?IS_PRESENCE(Presence) ->
-    exmpp_xml:remove_attribute(Presence, 'type');
+    exmpp_xml:remove_attribute(Presence, <<"type">>);
 set_type(Presence, <<"available">>) when ?IS_PRESENCE(Presence) ->
-    exmpp_xml:remove_attribute(Presence, 'type');
+    exmpp_xml:remove_attribute(Presence, <<"type">>);
 set_type(Presence, "available") when ?IS_PRESENCE(Presence) ->
-    exmpp_xml:remove_attribute(Presence, 'type');
+    exmpp_xml:remove_attribute(Presence, <<"type">>);
 
 set_type(Presence, Type) when is_binary(Type) ->
     set_type(Presence, binary_to_list(Type));
